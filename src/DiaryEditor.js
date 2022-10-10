@@ -1,12 +1,12 @@
-import { useRef, useState } from 'react';
+import { useRef, useState } from "react";
 
 const DiaryEditor = ({ onCreate }) => {
   const authorInput = useRef();
   const contentInput = useRef();
 
   const [state, setState] = useState({
-    author: '',
-    content: '',
+    author: "",
+    content: "",
     emotion: 1,
   });
 
@@ -27,10 +27,10 @@ const DiaryEditor = ({ onCreate }) => {
       return;
     }
     onCreate(state.author, state.content, state.emotion);
-    alert('저장 성공');
+    alert("저장 성공");
     setState({
-      author: '',
-      content: '',
+      author: "",
+      content: "",
       emotion: 1,
     });
   };
