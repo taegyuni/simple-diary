@@ -43,6 +43,10 @@
     padding: 20px;
 }
 
+.DiaryItem span {
+    margin-right: 10px;
+}
+
 .DiaryItem .info{
     border-bottom: 1px solid gray;
     padding-bottom: 10px;
