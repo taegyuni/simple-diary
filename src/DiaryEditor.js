@@ -1,12 +1,16 @@
-import { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 
 const DiaryEditor = ({ onCreate }) => {
+  useEffect(() => {
+    console.log('DiaryEditor 랜더');
+  });
+
   const authorInput = useRef();
   const contentInput = useRef();
 
   const [state, setState] = useState({
-    author: "",
-    content: "",
+    author: '',
+    content: '',
     emotion: 1,
   });
 
@@ -27,10 +31,10 @@ const DiaryEditor = ({ onCreate }) => {
       return;
     }
     onCreate(state.author, state.content, state.emotion);
-    alert("저장 성공");
+    alert('저장 성공');
     setState({
-      author: "",
-      content: "",
+      author: '',
+      content: '',
       emotion: 1,
     });
   };
@@ -76,4 +80,6 @@ const DiaryEditor = ({ onCreate }) => {
     </div>
   );
 };
-export default DiaryEditor;
+export default React.memo(DiaryEditor);
+
+// 아래에 react.memo로 묶어서 보낼수 있음.
