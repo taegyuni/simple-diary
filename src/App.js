@@ -1,11 +1,42 @@
-import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import { useReducer, useMemo, useEffect, useRef, useCallback } from 'react';
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
 import Lifecycle from './Lifecycle';
 
-function App() {
-  const [data, setData] = useState([]);
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'INIT': {
+      return action.data;
+    }
+    case 'CREATE': {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data,
+        created_date,
+      };
+      return [newItem, ...state];
+    }
+    case 'REMOVE': {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    case 'EDIT': {
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, content: action.newContent } : it
+      );
+    }
+    default:
+      return state;
+  }
+};
+
+const App = () => {
+  //useState 훅을 사용하지 않고
+  //const [data, setData] = useState([]);
+
+  //useReducer 훅을 사용한다.
+  //dispatch는 그냥 호출하면 알아서 현재 스테이트를 reducer 함수가 알아서 사용한다. dependency array를 신경쓸 필요없다.
+  const [data, dispatch] = useReducer(reducer, []);
 
   const dataId = useRef(0);
 
@@ -23,8 +54,7 @@ function App() {
         id: dataId.current++,
       };
     });
-
-    setData(initData);
+    dispatch({ type: 'INIT', data: initData });
   };
 
   useEffect(() => {
@@ -32,31 +62,27 @@ function App() {
   }, []);
 
   const onCreate = useCallback((author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dataId.current,
-    };
+    dispatch({
+      type: 'CREATE',
+      data: {
+        author,
+        content,
+        emotion,
+        id: dataId.current,
+      },
+    });
     dataId.current += 1;
-    //함수를 전달, 함수형 업데이트
-    setData((data) => [newItem, ...data]);
   }, []);
 
-  const onRemove = (targetId) => {
-    const newDiaryList = data.filter((it) => it.id !== targetId);
-    setData(newDiaryList);
-  };
+  //함수형 업데이트, 최신의 데이터를 사용하기 위해 data 인자부분을 사용해야함.
+  const onRemove = useCallback((targetId) => {
+    dispatch({ type: 'REMOVE', targetId });
+  }, []);
 
-  const onEdit = (targetId, newContent) => {
-    setData(
-      data.map((it) =>
-        it.id === targetId ? { ...it, content: newContent } : it
-      )
-    );
-  };
+  //useCallback을 사용해서 함수형으로 전달
+  const onEdit = useCallback((targetId, newContent) => {
+    dispatch({ type: 'EDIT', targetId, newContent });
+  }, []);
 
   //useMemo로 감싸고 최적화되면 해당함수는 더이상 함수가 아니게 된다.
   // 값을 useMemo로 부터 값을 리턴받기만 한다.
@@ -79,6 +105,6 @@ function App() {
       <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
     </div>
   );
-}
+};
 
 export default App;
