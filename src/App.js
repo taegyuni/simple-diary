@@ -1,4 +1,10 @@
-import { useReducer, useMemo, useEffect, useRef, useCallback } from 'react';
+import React, {
+  useReducer,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import './App.css';
 import DiaryEditor from './DiaryEditor';
 import DiaryList from './DiaryList';
@@ -30,10 +36,12 @@ const reducer = (state, action) => {
   }
 };
 
-const App = () => {
-  //useState 훅을 사용하지 않고
-  //const [data, setData] = useState([]);
+//부가적으로 export 가능하다. default는 파일에서 한번만 가능
+export const DiaryStateContext = React.createContext();
 
+export const DiaryDispatchContext = React.createContext();
+
+const App = () => {
   //useReducer 훅을 사용한다.
   //dispatch는 그냥 호출하면 알아서 현재 스테이트를 reducer 함수가 알아서 사용한다. dependency array를 신경쓸 필요없다.
   const [data, dispatch] = useReducer(reducer, []);
@@ -84,6 +92,10 @@ const App = () => {
     dispatch({ type: 'EDIT', targetId, newContent });
   }, []);
 
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onRemove, onEdit };
+  }, []);
+
   //useMemo로 감싸고 최적화되면 해당함수는 더이상 함수가 아니게 된다.
   // 값을 useMemo로 부터 값을 리턴받기만 한다.
   const getDiaryAnalysis = useMemo(() => {
@@ -96,14 +108,19 @@ const App = () => {
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
 
   return (
-    <div className="App">
-      <DiaryEditor onCreate={onCreate} />
-      <div>전체 일기: {data.length}</div>
-      <div>기분좋은 일기 개수: {goodCount} </div>
-      <div>기분나쁜 일기 개수: {badCount} </div>
-      <div>기분좋은 일기 비율: {goodRatio} </div>
-      <DiaryList onEdit={onEdit} onRemove={onRemove} diaryList={data} />
-    </div>
+    //diarystatecontext로 data공급
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext.Provider value={memoizedDispatches}>
+        <div className="App">
+          <DiaryEditor />
+          <div>전체 일기: {data.length}</div>
+          <div>기분좋은 일기 개수: {goodCount} </div>
+          <div>기분나쁜 일기 개수: {badCount} </div>
+          <div>기분좋은 일기 비율: {goodRatio} </div>
+          <DiaryList />
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
 };
 
